@@ -1,0 +1,25 @@
+[
+  {
+    "name": "Project NAME_1",
+    "exclude": [
+      "**\\obj\\*",
+      "**\\bin\\*",
+      "**\\*.lic",
+      "appsettings.json"
+    ],
+    "sources": [
+      {
+        "name": "Working folder",
+        "path": "D:\\dev\\Project1"
+      },
+      {
+        "name": "Remote folder",
+        "path": "E:\\git\\Project1"
+      },
+      {
+        "name": "Backup folder",
+        "path": "F:\\bak\\Project1"
+      }
+    ]
+  }
+]

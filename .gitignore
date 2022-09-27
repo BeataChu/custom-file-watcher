@@ -1,0 +1,13 @@
+*.class
+.idea/
+target/
+*.log
+
+*.jar
+*.tar.gz
+
+hs_err_pid*
+replay_pid*
+/src/main/resources/mirror_folders_config.json
+
+!/.mvn/wrapper/maven-wrapper.jar
