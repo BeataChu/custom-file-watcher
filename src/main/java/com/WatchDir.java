@@ -2,16 +2,16 @@ package com;
 
 import java.io.IOException;
 import java.nio.file.*;
-import java.util.HashMap;
 import java.util.Map;
 
 import static java.nio.file.LinkOption.NOFOLLOW_LINKS;
-import static java.nio.file.StandardWatchEventKinds.*;
+import static java.nio.file.StandardWatchEventKinds.ENTRY_CREATE;
+import static java.nio.file.StandardWatchEventKinds.OVERFLOW;
 
 public class WatchDir {
     private final WatchService watcher;
     private SimpleFileVisitor<Path> fileVisitor;
-    private final Map<WatchKey, Path> keys;
+    private Map<WatchKey, Path> keys;
 
     @SuppressWarnings("unchecked")
     static <T> WatchEvent<T> cast(WatchEvent<?> event) {
@@ -21,35 +21,23 @@ public class WatchDir {
     /**
      * Creates a WatchService and registers the given directory
      */
-    public WatchDir(Path dir, SimpleFileVisitor fileVisitor) throws IOException {
-        this.watcher = FileSystems.getDefault().newWatchService();
+    public WatchDir(Path dir, SimpleFileVisitor fileVisitor, WatchService watcher, Map<WatchKey, Path> keys) {
+        this.watcher = watcher;
         this.fileVisitor = fileVisitor;
-        this.keys = new HashMap<WatchKey, Path>();
+        this.keys = keys;
 
         System.out.format("Scanning %s ...\n", dir);
-        registerAll(dir);
+        try {
+            registerAll(dir);
+        } catch (IOException ioException) {
+            ioException.printStackTrace();
+        }
         System.out.println("Done.");
 
         // enable trace after initial registration
 //        this.trace = true;
     }
 
-    /**
-     * Register the given directory with the WatchService
-     */
-    private void register(Path dir) throws IOException {
-        WatchKey key = dir.register(watcher, ENTRY_CREATE, ENTRY_DELETE, ENTRY_MODIFY);
-
-        Path prev = keys.get(key);
-        if (prev == null) {
-            System.out.format("register: %s\n", dir);
-        } else {
-            if (!dir.equals(prev)) {
-                System.out.format("update: %s -> %s\n", prev, dir);
-            }
-        }
-        keys.put(key, dir);
-    }
 
     /**
      * Register the given directory, and all its sub-directories, with the
@@ -121,4 +109,5 @@ public class WatchDir {
             }
         }
     }
+
 }

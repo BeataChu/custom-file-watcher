@@ -10,7 +10,7 @@ public class PathDataProviderImpl implements PathDataProvider {
     @Override
     public MirrorPathData getPathDataForProject() {
         MirrorPathData mirrorPathData = null;
-        try (InputStream in = Thread.currentThread().getContextClassLoader().getResourceAsStream("mirror-folders-config.json")) {
+        try (InputStream in = Thread.currentThread().getContextClassLoader().getResourceAsStream("mirror_folders_config.json")) {
             ObjectMapper mapper = new ObjectMapper();
             mirrorPathData = mapper.readValue(in, MirrorPathData.class);
         } catch (Exception e) {

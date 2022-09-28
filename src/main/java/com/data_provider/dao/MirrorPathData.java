@@ -18,4 +18,5 @@ public class MirrorPathData {
     public List<Source> getSources() {
         return sources;
     }
+
 }

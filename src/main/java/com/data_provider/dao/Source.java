@@ -20,7 +20,7 @@ public class Source {
 
         try {
             filePath = Paths.get(path);
-        } catch (InvalidPathException e) {
+        } catch (Exception e) {
             //TODO: implement logging
             //todo: improve exception handling
             System.out.println("Illegal path in json: " + path);
