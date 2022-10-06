@@ -11,9 +11,25 @@ import static java.nio.file.StandardWatchEventKinds.OVERFLOW;
 
 public class WatchDir {
     private final WatchService watcher;
+
     private SimpleFileVisitor<Path> fileVisitor;
-    private final Map<WatchKey, Path> keys;
-    private final List<Path> excludedPaths;
+
+    private Map<WatchKey, Path> keys;
+
+    private List<Path> excludedPaths;
+
+    /**
+     * Creates a WatchService and registers the given directory
+     */
+    public WatchDir(Path dir, WatchService watcher, SimpleFileVisitor<Path> fileVisitor, Map<WatchKey, Path> keys, List<Path> excludedPaths)  throws IOException {
+        this.watcher = watcher;
+        this.fileVisitor = fileVisitor;
+        this.keys = keys;
+        this.excludedPaths = excludedPaths;
+        System.out.format("Scanning %s ...\n", dir);
+        registerAll(dir);
+        System.out.println("Done.");
+    }
 
     @SuppressWarnings("unchecked")
     static <T> WatchEvent<T> cast(WatchEvent<?> event) {
@@ -23,21 +39,17 @@ public class WatchDir {
     /**
      * Creates a WatchService and registers the given directory
      */
-    public WatchDir(Path dir, SimpleFileVisitor fileVisitor, WatchService watcher, Map<WatchKey, Path> keys, List<Path> excludedPaths) throws IOException {
-        this.watcher = watcher;
-        this.fileVisitor = fileVisitor;
-        this.keys = keys;
-        this.excludedPaths = excludedPaths;
-
-        System.out.format("Scanning %s ...\n", dir);
-        registerAll(dir);
-        System.out.println("Done.");
-
-        // enable trace after initial registration
-//        this.trace = true;
-    }
-
-
+//    public WatchDir(Path dir, SimpleFileVisitor fileVisitor, WatchService watcher) throws IOException {
+//        this.watcher = watcher;
+//        this.fileVisitor = fileVisitor;
+//
+//        System.out.format("Scanning %s ...\n", dir);
+//        registerAll(dir);
+//        System.out.println("Done.");
+//
+//        // enable trace after initial registration
+////        this.trace = true;
+//    }
 
     /**
      * Register the given directory, and all its sub-directories, with the
@@ -83,7 +95,7 @@ public class WatchDir {
                 Path child = dir.resolve(name);
 
                 if (excludedPaths.contains(child) || excludedPaths.stream()
-                        .anyMatch(exclPath -> child.startsWith(exclPath))){
+                        .anyMatch(exclPath -> child.startsWith(exclPath))) {
                     System.out.println("****Path should be excluded " + child);
                     continue;
                 }

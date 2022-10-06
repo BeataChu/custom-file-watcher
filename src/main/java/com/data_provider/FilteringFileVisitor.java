@@ -1,5 +1,9 @@
 package com.data_provider;
 
+import com.data_provider.dao.MirrorPathData;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
+
 import java.io.IOException;
 import java.nio.file.*;
 import java.nio.file.attribute.BasicFileAttributes;
@@ -9,20 +13,27 @@ import static java.nio.file.FileVisitResult.CONTINUE;
 import static java.nio.file.FileVisitResult.SKIP_SUBTREE;
 import static java.nio.file.StandardWatchEventKinds.*;
 
+@Component
 public class FilteringFileVisitor extends SimpleFileVisitor<Path> {
 
-    private final List<PathMatcher> matchers;
-    private final WatchService watcher;
-    private Map<WatchKey, Path> keys;
-    private List<Path> excludedPaths;
+    private List<PathMatcher> matchers;
+    @Autowired
+    private WatchService watcher;
 
-    public FilteringFileVisitor(List<String> excludePatterns, WatchService watcher, Map<WatchKey, Path> keys, List<Path> excludedPaths) {
-        this.watcher = watcher;
-        this.keys = keys;
-        this.excludedPaths = excludedPaths;
+    private Map<WatchKey, Path> keys;
+    @Autowired
+    private List<Path> excludedPaths;
+    @Autowired
+    private MirrorPathData pathDataFromJson;
+
+    public void run() {
+        System.out.println(pathDataFromJson);
+
         FileSystem fileSystem = FileSystems.getDefault();
-        matchers = new ArrayList<>(excludePatterns.size());
-        for (String patternStr : excludePatterns) {
+        matchers = new ArrayList<>(pathDataFromJson
+                .getExclude()
+                .size());
+        for (String patternStr : pathDataFromJson.getExclude()) {
             matchers.add(fileSystem.getPathMatcher("glob:" + patternStr));
         }
     }
