@@ -4,10 +4,18 @@ import com.data_provider.dao.MirrorPathData;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.context.annotation.*;
 
+import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.*;
 import java.util.*;
 
+/**
+ * Provides beans for Spring application:
+ * path data obtained from resource json file,
+ * map of keys - events in directories caught by a watcher,
+ * watcher itself
+ * and a list of paths excluded from watching
+ */
 @Configuration
 @ComponentScan(basePackageClasses = FileVisitor.class)
 public class PathDataConfig {
@@ -34,4 +42,15 @@ public class PathDataConfig {
         return new ArrayList<>();
     }
 
+
+    @Bean
+    public WatchService watcher() {
+        WatchService watcher = null;
+        try {
+            watcher = FileSystems.getDefault().newWatchService();
+        } catch (IOException ioException) {
+            ioException.printStackTrace();
+        }
+         return watcher;
+    }
 }

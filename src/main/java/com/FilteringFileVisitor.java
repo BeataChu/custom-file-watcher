@@ -1,4 +1,4 @@
-package com.data_provider;
+package com;
 
 import com.data_provider.dao.MirrorPathData;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -13,13 +13,17 @@ import static java.nio.file.FileVisitResult.CONTINUE;
 import static java.nio.file.FileVisitResult.SKIP_SUBTREE;
 import static java.nio.file.StandardWatchEventKinds.*;
 
+/** Defines rules of directories tree traversal
+ */
 @Component
 public class FilteringFileVisitor extends SimpleFileVisitor<Path> {
 
     private List<PathMatcher> matchers;
+
     @Autowired
     private WatchService watcher;
 
+    @Autowired
     private Map<WatchKey, Path> keys;
     @Autowired
     private List<Path> excludedPaths;

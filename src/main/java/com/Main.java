@@ -1,6 +1,5 @@
 package com;
 
-import com.data_provider.FilteringFileVisitor;
 import com.data_provider.dao.MirrorPathData;
 import com.data_provider.dao.Source;
 import org.slf4j.Logger;
@@ -34,6 +33,9 @@ public class Main implements CommandLineRunner {
     @Autowired
     private ApplicationContext appContext;
 
+    @Autowired
+    WatchService watcher;
+
     private static Logger LOG = LoggerFactory
             .getLogger(Main.class);
 
@@ -52,17 +54,15 @@ public class Main implements CommandLineRunner {
         List<WatchDir> watchDirs = new ArrayList<>();
         for (Source source : pathDataFromJson.getSources()) {
             try {
-                WatchService watcher =  FileSystems.getDefault().newWatchService();
                 WatchDir watchDir = new WatchDir(source.resolvePath(), watcher, this.fileVisitor, keys, excludedPaths);
                 watchDirs.add(watchDir);
-                //todo: improve logging
-                System.out.println("Registering new WatchDir object for path " + source.getPath());
+                LOG.info("Registering new WatchDir object for path " + source.getPath());
             } catch (IOException e) {
                 e.printStackTrace();
             }
         }
 
-        System.out.println(String.format("%s of %s directory listeners initiated.", watchDirs.size(), pathDataFromJson.getSources().size()));
+        LOG.info("{} of {} directory listeners initiated.", watchDirs.size(), pathDataFromJson.getSources().size());
 
         //implement multithreading
         for (WatchDir watchDir : watchDirs) {

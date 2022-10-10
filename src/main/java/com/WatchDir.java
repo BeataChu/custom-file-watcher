@@ -1,5 +1,8 @@
 package com;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.io.IOException;
 import java.nio.file.*;
 import java.util.List;
@@ -9,9 +12,14 @@ import static java.nio.file.LinkOption.NOFOLLOW_LINKS;
 import static java.nio.file.StandardWatchEventKinds.ENTRY_CREATE;
 import static java.nio.file.StandardWatchEventKinds.OVERFLOW;
 
+/**
+ * Creates entity that is going to listen to modifications and then deal with it depending on the event type
+ */
 public class WatchDir {
-    private final WatchService watcher;
 
+    private static Logger LOG = LoggerFactory.getLogger(WatchDir.class);
+
+    private WatchService watcher;
     private SimpleFileVisitor<Path> fileVisitor;
 
     private Map<WatchKey, Path> keys;
@@ -21,14 +29,15 @@ public class WatchDir {
     /**
      * Creates a WatchService and registers the given directory
      */
-    public WatchDir(Path dir, WatchService watcher, SimpleFileVisitor<Path> fileVisitor, Map<WatchKey, Path> keys, List<Path> excludedPaths)  throws IOException {
+    public WatchDir(Path dir, WatchService watcher,
+                    SimpleFileVisitor<Path> fileVisitor, Map<WatchKey, Path> keys, List<Path> excludedPaths)  throws IOException {
         this.watcher = watcher;
         this.fileVisitor = fileVisitor;
         this.keys = keys;
         this.excludedPaths = excludedPaths;
-        System.out.format("Scanning %s ...\n", dir);
+        LOG.info("Scanning %s ...\n", dir);
         registerAll(dir);
-        System.out.println("Done.");
+        LOG.info("Done.");
     }
 
     @SuppressWarnings("unchecked")
