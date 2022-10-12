@@ -1,4 +1,4 @@
-package com.data_provider.dao;
+package com.data_provider;
 
 import java.nio.file.*;
 

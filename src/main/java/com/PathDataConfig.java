@@ -1,13 +1,11 @@
 package com;
 
-import com.data_provider.dao.MirrorPathData;
+import com.data_provider.MirrorPathData;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.context.annotation.*;
 
-import java.io.IOException;
 import java.io.InputStream;
-import java.nio.file.*;
-import java.util.*;
+import java.nio.file.FileVisitor;
 
 /**
  * Provides beans for Spring application:
@@ -30,27 +28,5 @@ public class PathDataConfig {
             e.printStackTrace();
         }
         return mirrorPathData;
-    }
-
-    @Bean
-    public Map<WatchKey, Path> keys() {
-        return new HashMap<>();
-    }
-
-    @Bean
-    public List<Path> excludedPaths() {
-        return new ArrayList<>();
-    }
-
-
-    @Bean
-    public WatchService watcher() {
-        WatchService watcher = null;
-        try {
-            watcher = FileSystems.getDefault().newWatchService();
-        } catch (IOException ioException) {
-            ioException.printStackTrace();
-        }
-         return watcher;
     }
 }

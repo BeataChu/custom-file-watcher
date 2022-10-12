@@ -1,8 +1,6 @@
-package com;
+package com.internal_event_level;
 
-import com.data_provider.dao.MirrorPathData;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Component;
+import com.data_provider.MirrorPathData;
 
 import java.io.IOException;
 import java.nio.file.*;
@@ -15,20 +13,24 @@ import static java.nio.file.StandardWatchEventKinds.*;
 
 /** Defines rules of directories tree traversal
  */
-@Component
 public class FilteringFileVisitor extends SimpleFileVisitor<Path> {
 
     private List<PathMatcher> matchers;
 
-    @Autowired
     private WatchService watcher;
 
-    @Autowired
     private Map<WatchKey, Path> keys;
-    @Autowired
+
     private List<Path> excludedPaths;
-    @Autowired
+
     private MirrorPathData pathDataFromJson;
+
+    public FilteringFileVisitor(WatchService watcher, Map<WatchKey, Path> keys, List<Path> excludedPaths, MirrorPathData pathDataFromJson) {
+        this.watcher = watcher;
+        this.keys = keys;
+        this.excludedPaths = excludedPaths;
+        this.pathDataFromJson = pathDataFromJson;
+    }
 
     public void run() {
         System.out.println(pathDataFromJson);
@@ -55,7 +57,7 @@ public class FilteringFileVisitor extends SimpleFileVisitor<Path> {
         Path name = file.getFileName();
         if (name != null && (file.endsWith("bin") || file.endsWith("obj") || file.endsWith("appsettings.json") || file.endsWith(".lic"))) {
             excludedPaths.add(file);
-            System.out.println("******Exclude path " + file);
+            System.out.println("Exclude path " + file);
             return true;
         }
         return false;
@@ -76,7 +78,7 @@ public class FilteringFileVisitor extends SimpleFileVisitor<Path> {
             excludedPaths.add(dir);
             return SKIP_SUBTREE;
         }
-        register(dir);
+        addPathToKeys(dir);
         return CONTINUE;
     }
 
@@ -90,7 +92,7 @@ public class FilteringFileVisitor extends SimpleFileVisitor<Path> {
     /**
      * Register the given directory with the WatchService
      */
-    private void register(Path dir) {
+    private void addPathToKeys(Path dir) {
         try {
             WatchKey key = dir.register(watcher, ENTRY_CREATE, ENTRY_DELETE, ENTRY_MODIFY);
 

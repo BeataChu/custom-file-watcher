@@ -1,5 +1,6 @@
-package com;
+package com.internal_event_level;
 
+import com.external_event_level.ModificationEvent;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -20,17 +21,39 @@ public class WatchDir {
     private static Logger LOG = LoggerFactory.getLogger(WatchDir.class);
 
     private WatchService watcher;
+
     private SimpleFileVisitor<Path> fileVisitor;
 
     private Map<WatchKey, Path> keys;
 
     private List<Path> excludedPaths;
 
+    private List<ModificationEvent> pendingEvents;
+
+    public WatchService getWatcher() {
+        return watcher;
+    }
+
+    public SimpleFileVisitor<Path> getFileVisitor() {
+        return fileVisitor;
+    }
+
+    public Map<WatchKey, Path> getKeys() {
+        return keys;
+    }
+
+    public List<Path> getExcludedPaths() {
+        return excludedPaths;
+    }
+
     /**
      * Creates a WatchService and registers the given directory
      */
-    public WatchDir(Path dir, WatchService watcher,
-                    SimpleFileVisitor<Path> fileVisitor, Map<WatchKey, Path> keys, List<Path> excludedPaths)  throws IOException {
+    public WatchDir(Path dir,
+                    WatchService watcher,
+                    SimpleFileVisitor<Path> fileVisitor,
+                    Map<WatchKey, Path> keys,
+                    List<Path> excludedPaths)  throws IOException {
         this.watcher = watcher;
         this.fileVisitor = fileVisitor;
         this.keys = keys;
@@ -38,27 +61,12 @@ public class WatchDir {
         LOG.info("Scanning %s ...\n", dir);
         registerAll(dir);
         LOG.info("Done.");
-    }
+ }
 
     @SuppressWarnings("unchecked")
     static <T> WatchEvent<T> cast(WatchEvent<?> event) {
         return (WatchEvent<T>) event;
     }
-
-    /**
-     * Creates a WatchService and registers the given directory
-     */
-//    public WatchDir(Path dir, SimpleFileVisitor fileVisitor, WatchService watcher) throws IOException {
-//        this.watcher = watcher;
-//        this.fileVisitor = fileVisitor;
-//
-//        System.out.format("Scanning %s ...\n", dir);
-//        registerAll(dir);
-//        System.out.println("Done.");
-//
-//        // enable trace after initial registration
-////        this.trace = true;
-//    }
 
     /**
      * Register the given directory, and all its sub-directories, with the
@@ -86,7 +94,7 @@ public class WatchDir {
 
             Path dir = keys.get(key);
             if (dir == null) {
-                System.err.println("WatchKey not recognized!!");
+                LOG.info("########## Watch key not recognized!!");
                 continue;
             }
 
@@ -95,6 +103,7 @@ public class WatchDir {
 
                 // TBD - provide example of how OVERFLOW event is handled
                 if (kind == OVERFLOW) {
+                    LOG.info("Watch key overflow");
                     continue;
                 }
 
@@ -105,12 +114,12 @@ public class WatchDir {
 
                 if (excludedPaths.contains(child) || excludedPaths.stream()
                         .anyMatch(exclPath -> child.startsWith(exclPath))) {
-                    System.out.println("****Path should be excluded " + child);
+                    LOG.info("Event is ignored for path " + child);
                     continue;
                 }
 
                 // print out event
-                System.out.format("%s: %s\n", event.kind().name(), child);
+                LOG.info("{}: {}", event.kind().name(), child);
 
                 // if directory is created, and watching recursively, then
                 // register it and its sub-directories
@@ -120,7 +129,7 @@ public class WatchDir {
                             registerAll(child);
                         }
                     } catch (IOException x) {
-                        // ignore to keep sample readbale
+                        // ignore to keep sample readable
                     }
                 }
             }
