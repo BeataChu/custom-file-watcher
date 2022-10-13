@@ -3,6 +3,8 @@ package com.external_event_level;
 import com.internal_event_level.WatchDir;
 import org.springframework.stereotype.Component;
 
+import java.nio.file.Path;
+import java.nio.file.WatchEvent;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.concurrent.ConcurrentLinkedQueue;
@@ -14,12 +16,17 @@ public class ExternalEventProcessor {
 
     private Set<WatchDir> watchDirs = new HashSet<>();
 
-    void pushEvent(ModificationEvent event) {
-        queue.add(event);
-        //iterate watchdirs, if event.rootPath != watchdir.rootPath - add to watchdir.pendingevents
+    public void pushEvent(WatchEvent.Kind kind, Path fullPath, WatchDir watchDir) {
+        ModificationEvent modificationEvent = ModificationEvent.ofWatchEvent(kind, fullPath, watchDir);
+        queue.offer(modificationEvent);
+        for (WatchDir localWatchDir : watchDirs) {
+            if (!modificationEvent.getRootPath().equals(localWatchDir.getRootPath())) {
+                localWatchDir.getPendingEvents().add(modificationEvent);
+            }
+        }
     }
 
-    void run() {
+    public void run() {
         while (true) {
             ModificationEvent event = queue.poll();
             // IO operations

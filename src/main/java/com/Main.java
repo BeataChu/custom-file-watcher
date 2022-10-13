@@ -54,7 +54,7 @@ public class Main implements CommandLineRunner {
 
         LOG.info("{} of {} directory listeners initiated.", externalEventProcessor.getWatchDirs().size(), pathDataFromJson.getSources().size());
 
-       WatchDirsProcessor.processEvents(externalEventProcessor.getWatchDirs());
+       WatchDirsProcessor.processEvents(externalEventProcessor);
     }
 }
 

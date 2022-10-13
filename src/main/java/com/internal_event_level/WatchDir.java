@@ -1,13 +1,15 @@
 package com.internal_event_level;
 
+import com.external_event_level.ExternalEventProcessor;
 import com.external_event_level.ModificationEvent;
+import lombok.Getter;
+import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.nio.file.*;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 import static java.nio.file.LinkOption.NOFOLLOW_LINKS;
 import static java.nio.file.StandardWatchEventKinds.ENTRY_CREATE;
@@ -16,9 +18,13 @@ import static java.nio.file.StandardWatchEventKinds.OVERFLOW;
 /**
  * Creates entity that is going to listen to modifications and then deal with it depending on the event type
  */
+@Getter
+@RequiredArgsConstructor
 public class WatchDir {
 
     private static Logger LOG = LoggerFactory.getLogger(WatchDir.class);
+
+    private final Path rootPath;
 
     private WatchService watcher;
 
@@ -28,23 +34,7 @@ public class WatchDir {
 
     private List<Path> excludedPaths;
 
-    private List<ModificationEvent> pendingEvents;
-
-    public WatchService getWatcher() {
-        return watcher;
-    }
-
-    public SimpleFileVisitor<Path> getFileVisitor() {
-        return fileVisitor;
-    }
-
-    public Map<WatchKey, Path> getKeys() {
-        return keys;
-    }
-
-    public List<Path> getExcludedPaths() {
-        return excludedPaths;
-    }
+    private List<ModificationEvent> pendingEvents = new ArrayList<>();
 
     /**
      * Creates a WatchService and registers the given directory
@@ -53,7 +43,9 @@ public class WatchDir {
                     WatchService watcher,
                     SimpleFileVisitor<Path> fileVisitor,
                     Map<WatchKey, Path> keys,
-                    List<Path> excludedPaths)  throws IOException {
+                    List<Path> excludedPaths) {
+
+        this.rootPath = dir;
         this.watcher = watcher;
         this.fileVisitor = fileVisitor;
         this.keys = keys;
@@ -72,15 +64,19 @@ public class WatchDir {
      * Register the given directory, and all its sub-directories, with the
      * WatchService.
      */
-    private void registerAll(final Path start) throws IOException {
-        Files.walkFileTree(start, fileVisitor);
+    private void registerAll(final Path start) {
+        try {
+            Files.walkFileTree(start, fileVisitor);
+        } catch (IOException ioException) {
+            ioException.printStackTrace();
+        }
     }
 
 
     /**
      * Process all events for keys queued to the watcher
      */
-    void processEvents() {
+    void processEvents(ExternalEventProcessor externalEventProcessor) {
         for (; ; ) {
 
             // wait for key to be signalled
@@ -94,7 +90,7 @@ public class WatchDir {
 
             Path dir = keys.get(key);
             if (dir == null) {
-                LOG.info("########## Watch key not recognized!!");
+                LOG.error("Watch key not recognized!!");
                 continue;
             }
 
@@ -112,8 +108,7 @@ public class WatchDir {
                 Path name = ev.context();
                 Path child = dir.resolve(name);
 
-                if (excludedPaths.contains(child) || excludedPaths.stream()
-                        .anyMatch(exclPath -> child.startsWith(exclPath))) {
+                if (excludedPaths.stream().anyMatch(exclPath -> child.startsWith(exclPath))) {
                     LOG.info("Event is ignored for path " + child);
                     continue;
                 }
@@ -121,16 +116,13 @@ public class WatchDir {
                 // print out event
                 LOG.info("{}: {}", event.kind().name(), child);
 
-                // if directory is created, and watching recursively, then
+                externalEventProcessor.pushEvent(event.kind(), child, this);
+                // if directory is created and is being watched recursively, then
                 // register it and its sub-directories
                 if (kind == ENTRY_CREATE) {
-                    try {
                         if (Files.isDirectory(child, NOFOLLOW_LINKS)) {
                             registerAll(child);
                         }
-                    } catch (IOException x) {
-                        // ignore to keep sample readable
-                    }
                 }
             }
 
