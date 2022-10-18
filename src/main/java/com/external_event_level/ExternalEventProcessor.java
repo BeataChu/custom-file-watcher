@@ -3,11 +3,14 @@ package com.external_event_level;
 import com.internal_event_level.WatchDir;
 import org.springframework.stereotype.Component;
 
+import java.io.IOException;
 import java.nio.file.Path;
 import java.nio.file.WatchEvent;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.concurrent.ConcurrentLinkedQueue;
+
+import static java.nio.file.StandardWatchEventKinds.*;
 
 @Component
 public class ExternalEventProcessor {
@@ -26,9 +29,25 @@ public class ExternalEventProcessor {
         }
     }
 
-    public void run() {
+    public void run() throws IOException {
         while (true) {
-            ModificationEvent event = queue.poll();
+            ModificationEvent modificationEvent = queue.poll();
+            FolderStructureFitter structureFitter = new FolderStructureFitterImpl();
+            for (WatchDir watchDir : watchDirs) {
+                if (!watchDir.getRootPath().equals(modificationEvent.getRootPath())) {
+                    if (ENTRY_CREATE.equals(modificationEvent.getKind())
+                            || (ENTRY_MODIFY.equals(modificationEvent.getKind()))) {
+                        structureFitter.copyDirectory(modificationEvent.getRootPath().resolve(modificationEvent.getRelativePath()), watchDir.getRootPath().resolve(modificationEvent.getRelativePath()));
+                    }
+
+                    if (ENTRY_DELETE.equals(modificationEvent.getKind())) {
+                        structureFitter.deleteDirectory(watchDir.getRootPath().resolve(modificationEvent.getRelativePath()));
+                    }
+                    //TODO: handle other types of events, like OVERFLOW, and exceptions)
+                    throw new IOException("Unexpected type of modification event");
+
+                }
+            }
             // IO operations
         }
     }

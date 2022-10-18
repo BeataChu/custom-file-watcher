@@ -1,7 +1,7 @@
 package com;
 
-import com.data_provider.MirrorPathData;
-import com.data_provider.Source;
+import com.data_provider.MirrorPathDTO;
+import com.data_provider.SourceDTO;
 import com.external_event_level.ExternalEventProcessor;
 import com.internal_event_level.*;
 import org.slf4j.Logger;
@@ -20,7 +20,7 @@ import java.util.*;
 public class Main implements CommandLineRunner {
 
     @Autowired
-    private MirrorPathData pathDataFromJson;
+    private MirrorPathDTO pathDataFromJson;
 
     @Autowired
     ExternalEventProcessor externalEventProcessor;
@@ -41,7 +41,7 @@ public class Main implements CommandLineRunner {
         HashMap<WatchKey, Path> keys = new HashMap<>();
         List<Path> excludedPaths = new ArrayList<>();
         Set<WatchDir> watchDirs = externalEventProcessor.getWatchDirs();
-        for (Source source : pathDataFromJson.getSources()) {
+        for (SourceDTO source : pathDataFromJson.getSources()) {
             FilteringFileVisitor fileVisitor = new FilteringFileVisitor(watcher, keys, excludedPaths, pathDataFromJson);
             fileVisitor.run();
             WatchDir watchDir = new WatchDir(source.resolvePath(),

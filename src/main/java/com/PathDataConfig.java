@@ -1,6 +1,6 @@
 package com;
 
-import com.data_provider.MirrorPathData;
+import com.data_provider.MirrorPathDTO;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.context.annotation.*;
 
@@ -19,11 +19,11 @@ import java.nio.file.FileVisitor;
 public class PathDataConfig {
 
     @Bean
-    public MirrorPathData pathDataFromJson() {
-        MirrorPathData mirrorPathData = null;
+    public MirrorPathDTO pathDataFromJson() {
+        MirrorPathDTO mirrorPathData = null;
         try (InputStream in = Thread.currentThread().getContextClassLoader().getResourceAsStream("mirror_folders_config.json")) {
             ObjectMapper mapper = new ObjectMapper();
-            mirrorPathData = mapper.readValue(in, MirrorPathData.class);
+            mirrorPathData = mapper.readValue(in, MirrorPathDTO.class);
         } catch (Exception e) {
             e.printStackTrace();
         }

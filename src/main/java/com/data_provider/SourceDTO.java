@@ -2,7 +2,7 @@ package com.data_provider;
 
 import java.nio.file.*;
 
-public class Source {
+public class SourceDTO {
 
     private String name;
     private String path;

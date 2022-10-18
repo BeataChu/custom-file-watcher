@@ -3,10 +3,10 @@ package com.data_provider;
 import java.util.List;
 
 
-public class MirrorPathData {
+public class MirrorPathDTO {
     private String name;
     private List<String> exclude;
-    private List<Source> sources;
+    private List<SourceDTO> sources;
 
     public String getName() {
         return name;
@@ -16,7 +16,7 @@ public class MirrorPathData {
         return exclude;
     }
 
-    public List<Source> getSources() {
+    public List<SourceDTO> getSources() {
         return sources;
     }
 }

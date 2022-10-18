@@ -1,6 +1,6 @@
 package com.internal_event_level;
 
-import com.data_provider.MirrorPathData;
+import com.data_provider.MirrorPathDTO;
 
 import java.io.IOException;
 import java.nio.file.*;
@@ -23,9 +23,9 @@ public class FilteringFileVisitor extends SimpleFileVisitor<Path> {
 
     private List<Path> excludedPaths;
 
-    private MirrorPathData pathDataFromJson;
+    private MirrorPathDTO pathDataFromJson;
 
-    public FilteringFileVisitor(WatchService watcher, Map<WatchKey, Path> keys, List<Path> excludedPaths, MirrorPathData pathDataFromJson) {
+    public FilteringFileVisitor(WatchService watcher, Map<WatchKey, Path> keys, List<Path> excludedPaths, MirrorPathDTO pathDataFromJson) {
         this.watcher = watcher;
         this.keys = keys;
         this.excludedPaths = excludedPaths;
