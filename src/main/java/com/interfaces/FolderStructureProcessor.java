@@ -1,8 +1,8 @@
-package com.external_event_level;
+package com.interfaces;
 
 import java.nio.file.Path;
 
-public interface FolderStructureFitter {
+public interface FolderStructureProcessor {
 
     void copyDirectory(Path sourcePath, Path destinationPath);
 

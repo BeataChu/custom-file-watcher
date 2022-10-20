@@ -1,7 +1,7 @@
 package com;
 
-import com.external_event_level.ModificationEvent;
-import com.internal_event_level.WatchDir;
+import com.models.ModificationEvent;
+import com.services.WatchDir;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.*;

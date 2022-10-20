@@ -1,6 +1,6 @@
-package com.external_event_level;
+package com.models;
 
-import com.internal_event_level.WatchDir;
+import com.services.WatchDir;
 import lombok.*;
 
 import java.nio.file.Path;

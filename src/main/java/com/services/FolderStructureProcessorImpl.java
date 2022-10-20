@@ -1,8 +1,10 @@
-package com.external_event_level;
+package com.services;
+
+import com.interfaces.FolderStructureProcessor;
 
 import java.nio.file.Path;
 
-public class FolderStructureFitterImpl implements FolderStructureFitter {
+public class FolderStructureProcessorImpl implements FolderStructureProcessor {
     @Override
     public void copyDirectory(Path sourcePath, Path destinationPath) {
 //incl copy metadata

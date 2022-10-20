@@ -1,6 +1,6 @@
 package com;
 
-import com.external_event_level.ExternalEventProcessor;
+import com.services.FileSystemEventProcessorImpl;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
@@ -20,7 +20,7 @@ public class MainTest {
     ApplicationContext applicationContext;
 
     @Autowired
-    ExternalEventProcessor externalEventProcessor;
+    FileSystemEventProcessorImpl externalEventProcessor;
 
     @Test
     void checkBeans() {

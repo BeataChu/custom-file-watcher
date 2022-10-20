@@ -1,23 +1,18 @@
-package com.external_event_level;
+package com.services;
 
-import com.internal_event_level.WatchDir;
+import com.interfaces.FileSystemEventProcessor;
+import com.interfaces.FolderStructureProcessor;
+import com.models.ModificationEvent;
 import org.springframework.stereotype.Component;
 
-import java.io.IOException;
 import java.nio.file.Path;
 import java.nio.file.WatchEvent;
-import java.util.HashSet;
 import java.util.Set;
-import java.util.concurrent.ConcurrentLinkedQueue;
 
 import static java.nio.file.StandardWatchEventKinds.*;
 
 @Component
-public class ExternalEventProcessor {
-
-    private ConcurrentLinkedQueue<ModificationEvent> queue = new ConcurrentLinkedQueue<>();
-
-    private Set<WatchDir> watchDirs = new HashSet<>();
+public class FileSystemEventProcessorImpl implements FileSystemEventProcessor {
 
     public void pushEvent(WatchEvent.Kind kind, Path fullPath, WatchDir watchDir) {
         ModificationEvent modificationEvent = ModificationEvent.ofWatchEvent(kind, fullPath, watchDir);
@@ -29,23 +24,21 @@ public class ExternalEventProcessor {
         }
     }
 
-    public void run() throws IOException {
+    public void processEvents() {
         while (true) {
             ModificationEvent modificationEvent = queue.poll();
-            FolderStructureFitter structureFitter = new FolderStructureFitterImpl();
+            FolderStructureProcessor structureProcessor = new FolderStructureProcessorImpl();
             for (WatchDir watchDir : watchDirs) {
                 if (!watchDir.getRootPath().equals(modificationEvent.getRootPath())) {
                     if (ENTRY_CREATE.equals(modificationEvent.getKind())
                             || (ENTRY_MODIFY.equals(modificationEvent.getKind()))) {
-                        structureFitter.copyDirectory(modificationEvent.getRootPath().resolve(modificationEvent.getRelativePath()), watchDir.getRootPath().resolve(modificationEvent.getRelativePath()));
+                        structureProcessor.copyDirectory(modificationEvent.getRootPath().resolve(modificationEvent.getRelativePath()), watchDir.getRootPath().resolve(modificationEvent.getRelativePath()));
                     }
 
                     if (ENTRY_DELETE.equals(modificationEvent.getKind())) {
-                        structureFitter.deleteDirectory(watchDir.getRootPath().resolve(modificationEvent.getRelativePath()));
+                        structureProcessor.deleteDirectory(watchDir.getRootPath().resolve(modificationEvent.getRelativePath()));
                     }
                     //TODO: handle other types of events, like OVERFLOW, and exceptions)
-                    throw new IOException("Unexpected type of modification event");
-
                 }
             }
             // IO operations

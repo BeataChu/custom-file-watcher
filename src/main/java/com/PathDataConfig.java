@@ -1,6 +1,6 @@
 package com;
 
-import com.data_provider.MirrorPathDTO;
+import com.models.MirrorPathDTO;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.context.annotation.*;
 
@@ -24,6 +24,8 @@ public class PathDataConfig {
         try (InputStream in = Thread.currentThread().getContextClassLoader().getResourceAsStream("mirror_folders_config.json")) {
             ObjectMapper mapper = new ObjectMapper();
             mirrorPathData = mapper.readValue(in, MirrorPathDTO.class);
+
+            //todo: check that root paths are unique and not nested
         } catch (Exception e) {
             e.printStackTrace();
         }
