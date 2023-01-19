@@ -10,11 +10,9 @@ import org.springframework.stereotype.Component;
 import java.io.IOException;
 import java.nio.file.*;
 import java.nio.file.attribute.BasicFileAttributes;
-import java.util.*;
 
 import static java.nio.file.FileVisitResult.CONTINUE;
 import static java.nio.file.FileVisitResult.SKIP_SUBTREE;
-import static java.nio.file.StandardWatchEventKinds.*;
 
 /**
  * Defines rules of directories tree traversal
@@ -25,18 +23,13 @@ public class FilteringFileVisitor extends SimpleFileVisitor<Path> {
 
     private static Logger LOG = LoggerFactory.getLogger(FilteringFileVisitor.class);
 
-    //todo: remove
-//    private List<Path> excludedPaths = new ArrayList<>();
-    //todo: to hanger
-    private Map<WatchKey, Path> watchKeys = new HashMap();
-    //todo: to hanger
+    private DirMap dirMap;
+
     @Autowired
     private MatchingService matchingService;
-    //todo: to hanger
-    private WatchService watcher;
-    //todo: to hanger
-    public FilteringFileVisitor() {
-        watcher = WatchServiceProvider.getNewWatcher();
+
+    public FilteringFileVisitor(DirMap dirMap) {
+        this.dirMap = dirMap;
     }
 
     // Invoke the pattern matching method on each file.
@@ -50,33 +43,12 @@ public class FilteringFileVisitor extends SimpleFileVisitor<Path> {
     @Override
     public FileVisitResult preVisitDirectory(Path dir,
                                              BasicFileAttributes attrs) {
-
         if (matchingService.shouldBeExcluded(dir)) {
-            //todo: to hanger
-//            excludedPaths.add(dir);
-            System.out.println("Exclude path " + dir);
+            LOG.info("Exclude path " + dir);
             return SKIP_SUBTREE;
         }
-        //todo: to hanger
-        addPathToKeys(dir);
+        dirMap.registerDirectory(dir);
         return CONTINUE;
-    }
-
-    //todo: to hanger
-    /**
-     * Register the given directory with the WatchService
-     */
-    private void addPathToKeys(Path path) {
-        try {
-            if (!watchKeys.containsKey(path)) {
-                WatchKey key = path.register(watcher, ENTRY_CREATE, ENTRY_DELETE, ENTRY_MODIFY);
-                watchKeys.put(key, path);
-                LOG.info("register: {}", path);
-            }
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-
     }
 
     @Override

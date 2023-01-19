@@ -1,11 +1,13 @@
 package com.services;
 
 import com.interfaces.FileSystemEventProcessor;
+import com.interfaces.MatchingService;
 import com.models.ModificationEvent;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 
 import java.io.IOException;
 import java.nio.file.*;
@@ -23,6 +25,9 @@ import static java.nio.file.StandardWatchEventKinds.OVERFLOW;
 @RequiredArgsConstructor
 public class WatchDir {
 
+    @Autowired
+    MatchingService matcher;
+
     private static Logger LOG = LoggerFactory.getLogger(WatchDir.class);
 
     private final Path rootPath;
@@ -38,9 +43,14 @@ public class WatchDir {
 
         this.rootPath = dir;
         this.fileVisitor = fileVisitor;
+    }
 
-        LOG.info("Scanning %s ...\n", dir);
-        registerDirectories(dir);
+
+    public void scanDirs(Path startDir) {
+
+        LOG.info("Scanning %s ...\n", startDir);
+
+        registerDirectories(startDir);
         LOG.info("Done.");
     }
 
@@ -70,28 +80,30 @@ public class WatchDir {
 
             // wait for key to be signalled
             WatchKey key;
+            DirMap dirMap = fileVisitor.getDirMap();
             try {
-                key = fileVisitor.getWatcher().take();
+
+                key = dirMap.getWatcher().take();
 
             } catch (InterruptedException x) {
                 x.printStackTrace();
                 return;
             }
 
-            if (!fileVisitor.getWatchKeys().containsKey(key)) {
+            if (!dirMap.getWatchKeys().containsKey(key)) {
                 LOG.error("Watch key not recognized!!");
                 continue;
             }
 
-            processEventsForTheKey(key, eventProcessor);
+            processEventsForTheKey(dirMap, key, eventProcessor);
 
             // reset key and remove from set if directory no longer accessible
             boolean valid = key.reset();
             if (!valid) {
-                fileVisitor.getWatchKeys().remove(key);
+                dirMap.getWatchKeys().remove(key);
 
                 // all directories are inaccessible
-                if (fileVisitor.getWatchKeys().isEmpty()) {
+                if (dirMap.getWatchKeys().isEmpty()) {
                     break;
                 }
             }
@@ -99,7 +111,7 @@ public class WatchDir {
     }
 
 
-    private void processEventsForTheKey(WatchKey key, FileSystemEventProcessor eventProcessor) {
+    private void processEventsForTheKey(DirMap dirMap, WatchKey key, FileSystemEventProcessor eventProcessor) {
         for (WatchEvent<?> event : key.pollEvents()) {
             WatchEvent.Kind kind = event.kind();
 
@@ -110,16 +122,16 @@ public class WatchDir {
             }
 
             // Context for directory entry event is the file name of entry
-            Path dir = fileVisitor.getWatchKeys().get(key);
+            Path dir = dirMap.getWatchKeys().get(key);
             WatchEvent<Path> ev = cast(event);
             Path name = ev.context();
             Path child = dir.resolve(name);
 
-            //todo: remove, check using matcher
-//            if (fileVisitor.getExcludedPaths().stream().anyMatch(exclPath -> child.startsWith(exclPath))) {
-//                LOG.info("Event is ignored for path " + child);
-//                continue;
-//            }
+
+            if (matcher.shouldBeExcluded(child)) {
+                LOG.info("Event is ignored for path " + child);
+                continue;
+            }
 
             // print out event
             LOG.info("{}: {}", event.kind().name(), child);

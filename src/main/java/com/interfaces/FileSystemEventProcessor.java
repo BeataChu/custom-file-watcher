@@ -5,12 +5,11 @@ import com.services.WatchDir;
 
 import java.nio.file.Path;
 import java.nio.file.WatchEvent;
-import java.util.HashSet;
-import java.util.Set;
+import java.util.*;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
 
-public interface FileSystemEventProcessor {
+public interface FileSystemEventProcessor extends EventListener {
 
     BlockingQueue<ModificationEvent> queue = new LinkedBlockingQueue<>();
 

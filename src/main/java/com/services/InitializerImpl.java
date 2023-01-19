@@ -1,8 +1,7 @@
 package com.services;
 
 import com.interfaces.Initializer;
-import com.models.MirrorPathDTO;
-import com.models.SourceDTO;
+import com.models.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -17,12 +16,13 @@ public class InitializerImpl implements Initializer {
     @Autowired
     private FileSystemEventProcessorImpl externalEventProcessor;
 
-    public Set<WatchDir> initializeWatchDirs() {
+
+    public void initializeWatchDirs() {
         Set<WatchDir> watchDirs = externalEventProcessor.getWatchDirs();
 
         for (SourceDTO source : pathDataFromJson.getSources()) {
-
-            FilteringFileVisitor fileVisitor = new FilteringFileVisitor();
+            DirMap dirMap = new DirMap();
+            FilteringFileVisitor fileVisitor = new FilteringFileVisitor(dirMap);
             WatchDir watchDir = new WatchDir(source.resolvePath(), fileVisitor);
             watchDirs.add(watchDir);
 
@@ -30,7 +30,5 @@ public class InitializerImpl implements Initializer {
         }
 
         LOG.info("{} of {} directory listeners initialized.", externalEventProcessor.getWatchDirs().size(), pathDataFromJson.getSources().size());
-
-        return watchDirs;
     }
 }

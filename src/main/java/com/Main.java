@@ -2,7 +2,7 @@ package com;
 
 import com.interfaces.Initializer;
 import com.models.MirrorPathDTO;
-import com.services.*;
+import com.services.FileSystemEventProcessorImpl;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.SpringApplication;
@@ -11,7 +11,6 @@ import org.springframework.boot.autoconfigure.web.servlet.WebMvcAutoConfiguratio
 
 import java.io.IOException;
 import java.util.EventListener;
-import java.util.Set;
 
 @SpringBootApplication(exclude = {WebMvcAutoConfiguration.class})
 public class Main implements CommandLineRunner {
@@ -36,7 +35,7 @@ public class Main implements CommandLineRunner {
     public void run(String... args) throws Exception {
 
         //initialize watch dirs
-        Set<WatchDir> watchdirs = initializer.initializeWatchDirs();
+        initializer.initializeWatchDirs();
         //       WatchDirsProcessor.processEvents(externalEventProcessor);
 //        ProcessClass.process(watchdirs);
 

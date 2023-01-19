@@ -1,19 +1,14 @@
 package com.models;
 
+import lombok.Getter;
+
 import java.nio.file.*;
 
+@Getter
 public class SourceDTO {
 
     private String name;
     private String path;
-
-    public String getName() {
-        return name;
-    }
-
-    public String getPath() {
-        return path;
-    }
 
     public Path resolvePath() {
         Path filePath = null;
